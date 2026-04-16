@@ -387,6 +387,6 @@ Dự án được phát hành dưới giấy phép [ISC License](https://opensou
 
 <div align="center">
 
-**Được phát triển với ❤️ bởi nhóm ĐACNTT**
+**Được phát triển với ❤️ bởi nhóm DACNTT**
 
 </div>
