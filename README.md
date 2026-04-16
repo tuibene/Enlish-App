@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 # 🎓 English Learning Platform
 
@@ -390,4 +390,3 @@ Dự án được phát hành dưới giấy phép [ISC License](https://opensou
 **Được phát triển với ❤️ bởi nhóm ĐACNTT**
 
 </div>
-]]>
