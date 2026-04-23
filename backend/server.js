@@ -23,6 +23,9 @@ const exerciseRoutes = require('./src/routes/exerciseRoutes');
 const placementConfigRoutes = require('./src/routes/placementConfigRoutes'); // Added this line
 const courseRoutes = require('./src/routes/courseRoutes'); // Added this line
 const mockRoutes = require('./src/routes/mockRoutes');
+const officialMockRoutes = require('./src/routes/officialMockExamRoutes');
+const paymentRoutes = require('./src/routes/paymentRoutes');
+const orderRoutes = require('./src/routes/orderRoutes');
 require('./src/config/passport'); // Initialize passport
 
 // Connect to database
@@ -71,6 +74,9 @@ app.use('/api/exercises', exerciseRoutes);
 app.use('/api/placement-config', placementConfigRoutes); // Added this line
 app.use('/api/courses', courseRoutes); // Added this line
 app.use('/api/mock-exams', mockRoutes);
+app.use('/api/official-mocks', officialMockRoutes);
+app.use('/api/payment', paymentRoutes);
+app.use('/api/orders', orderRoutes);
 
 // Make uploads folder static
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -86,5 +92,7 @@ app.use(errorHandler);
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`));
+
+// Trigger nodemon restart
 
 // Trigger nodemon restart

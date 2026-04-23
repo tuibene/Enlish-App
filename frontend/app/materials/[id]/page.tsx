@@ -129,7 +129,7 @@ export default function MaterialDetail() {
                         <div className="mt-12 pt-8 border-t border-gray-100 dark:border-gray-700/50">
                             <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">Attached Document</h2>
                             <iframe
-                                src={`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')}${material.pdfUrl}`}
+                                src={material.pdfUrl.startsWith('http') ? `https://docs.google.com/viewer?url=${encodeURIComponent(material.pdfUrl)}&embedded=true` : `${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')}${material.pdfUrl}`}
                                 className="w-full h-[80vh] border border-gray-200 dark:border-gray-700 rounded-2xl shadow-sm"
                                 title="PDF Document"
                             />

@@ -105,11 +105,10 @@ function CourseCard({ course }: { course: any }) {
 
                 <Link
                     href={`/courses/${course._id}`}
-                    className={`w-full block text-center px-6 py-3.5 rounded-xl font-bold transition-all shadow-md mt-auto ${
-                        course.isPremium 
-                        ? "bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/30" 
-                        : "bg-gray-900 dark:bg-blue-600 hover:bg-black dark:hover:bg-blue-700 text-white"
-                    }`}
+                    className={`w-full block text-center px-6 py-3.5 rounded-xl font-bold transition-all shadow-md mt-auto ${course.isPremium
+                            ? "bg-orange-500 hover:bg-orange-600 text-white shadow-orange-500/30"
+                            : "bg-gray-900 dark:bg-blue-600 hover:bg-black dark:hover:bg-blue-700 text-white"
+                        }`}
                 >
                     {course.isPremium ? 'View Details' : 'View Syllabus'} <ArrowRight className="w-4 h-4 inline-block ml-1" />
                 </Link>

@@ -1,6 +1,10 @@
 export const en = {
     navbar: {
         mockExams: 'Mock Exams',
+        materials: 'Materials',
+        practice: 'Practice Hub',
+        assessment: 'Assessment',
+        roadmaps: 'Roadmaps',
         dashboard: 'Dashboard',
         adminPanel: 'Admin Panel',
         preferences: 'Preferences',

@@ -33,19 +33,19 @@ export default function Navbar() {
                         </Link>
                         <Link href="/materials" className="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-blue-600 dark:text-gray-300 dark:hover:text-blue-400 transition-colors">
                             <BookOpen className="w-4 h-4" />
-                            Materials
+                            {t.navbar.materials}
                         </Link>
                         <Link href="/practice" className="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-indigo-600 dark:text-gray-300 dark:hover:text-indigo-400 transition-colors">
                             <Headphones className="w-4 h-4" />
-                            Practice
+                            {t.navbar.practice}
                         </Link>
                         <Link href="/placement-test" className="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-green-600 dark:text-gray-300 dark:hover:text-green-400 transition-colors">
                             <Brain className="w-4 h-4" />
-                            Assessment
+                            {t.navbar.assessment}
                         </Link>
                         <Link href="/courses" className="flex items-center gap-1.5 text-sm font-medium text-gray-600 hover:text-orange-600 dark:text-gray-300 dark:hover:text-orange-400 transition-colors">
                             <Map className="w-4 h-4" />
-                            Roadmaps
+                            {t.navbar.roadmaps}
                         </Link>
 
                         {user ? (
@@ -54,7 +54,7 @@ export default function Navbar() {
                                     <LayoutDashboard className="w-4 h-4" />
                                     {t.navbar.dashboard}
                                 </Link>
-                                {user.role === 'ADMIN' && (
+                                {(user.role === 'ADMIN' || user.role === 'ROOT') && (
                                     <Link href="/admin" className="flex items-center gap-1.5 text-sm font-medium text-red-600 hover:text-red-700 dark:text-red-400 transition-colors">
                                         <ShieldAlert className="w-4 h-4" />
                                         {t.navbar.adminPanel}
@@ -76,12 +76,14 @@ export default function Navbar() {
                                             title="Toggle Language"
                                         >
                                             <Globe className="w-3.5 h-3.5" />
-                                            {user.language === 'vi' ? 'VN' : 'EN'}
+                                            <span className={user.language !== 'vi' ? 'text-blue-600 dark:text-blue-400' : ''}>EN</span>
+                                            <span className="opacity-50">/</span>
+                                            <span className={user.language === 'vi' ? 'text-blue-600 dark:text-blue-400' : ''}>VN</span>
                                         </button>
                                     </div>
                                     <Link href="/profile" className="flex items-center gap-2 group">
                                         {user.avatar ? (
-                                            <img src={`${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.avatar}`} alt="Avatar" className="w-8 h-8 rounded-full object-cover border-2 border-transparent group-hover:border-blue-500 transition-colors" />
+                                            <img src={user.avatar.startsWith('http') ? user.avatar : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.avatar}`} alt="Avatar" className="w-8 h-8 rounded-full object-cover border-2 border-transparent group-hover:border-blue-500 transition-colors" />
                                         ) : (
                                             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
                                                 {user.name.charAt(0).toUpperCase()}
@@ -138,16 +140,16 @@ export default function Navbar() {
                             {t.navbar.mockExams}
                         </Link>
                         <Link href="/materials" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800">
-                            Materials
+                            {t.navbar.materials}
                         </Link>
                         <Link href="/practice" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-indigo-50 dark:text-gray-300 dark:hover:bg-gray-800">
-                            Practice Hub
+                            {t.navbar.practice}
                         </Link>
                         <Link href="/placement-test" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-green-600 hover:bg-green-50 dark:text-gray-300 dark:hover:bg-gray-800">
-                            Assessment
+                            {t.navbar.assessment}
                         </Link>
                         <Link href="/courses" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-orange-600 hover:bg-orange-50 dark:text-gray-300 dark:hover:bg-gray-800">
-                            Roadmaps
+                            {t.navbar.roadmaps}
                         </Link>
                         {user ? (
                             <>
@@ -157,7 +159,7 @@ export default function Navbar() {
                                 <Link href="/dashboard" className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-gray-800">
                                     {t.navbar.dashboard}
                                 </Link>
-                                {user.role === 'ADMIN' && (
+                                {(user.role === 'ADMIN' || user.role === 'ROOT') && (
                                     <Link href="/admin" className="block px-3 py-2 rounded-md text-base font-medium text-red-600 hover:bg-gray-50 dark:text-red-400 dark:hover:bg-gray-800">
                                         {t.navbar.adminPanel}
                                     </Link>
@@ -174,9 +176,12 @@ export default function Navbar() {
                                             </button>
                                             <button
                                                 onClick={() => updatePreferences(user.theme || 'light', user.language === 'vi' ? 'en' : 'vi')}
-                                                className="text-sm font-bold text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400"
+                                                className="text-sm font-bold text-gray-500 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 flex gap-1 items-center"
                                             >
-                                                {user.language === 'vi' ? 'VN' : 'EN'}
+                                                <Globe className="w-4 h-4 mr-1" />
+                                                <span className={user.language !== 'vi' ? 'text-blue-600 dark:text-blue-400' : ''}>EN</span>
+                                                <span className="opacity-50">/</span>
+                                                <span className={user.language === 'vi' ? 'text-blue-600 dark:text-blue-400' : ''}>VN</span>
                                             </button>
                                         </div>
                                     </div>

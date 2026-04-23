@@ -17,6 +17,7 @@ export default function PlacementTestPage() {
         listeningAudioUrl: '',
         listeningQuestion: '',
         writingPrompt: '',
+        writingImageUrl: '',
         speakingPrompt: ''
     });
 
@@ -37,6 +38,7 @@ export default function PlacementTestPage() {
                         listeningAudioUrl: data.listeningAudioUrl || '/ielts-lecture.mp3',
                         listeningQuestion: data.listeningQuestion || 'Listen to the lecture on urban ecology. What did researchers discover about the variety of insect species in city parks? Explain briefly.',
                         writingPrompt: data.writingPrompt || 'Some people believe that technological advancements have made humans less socially active, while others argue that technology has connected us more than ever before. Discuss both views and give your own opinion. (Min: 50 words)',
+                        writingImageUrl: data.writingImageUrl || '',
                         speakingPrompt: data.speakingPrompt || 'Press record and speak clearly into your microphone for about 30-45 seconds. Describe a skill you would like to learn in the future. Explain why you want to learn it and how it would benefit you.'
                     });
                 }
@@ -356,6 +358,12 @@ export default function PlacementTestPage() {
                             <div className="bg-blue-50 dark:bg-blue-900/10 p-6 rounded-2xl mb-6 border border-blue-100 dark:border-blue-800">
                                 <strong>Prompt:</strong> {testConfig.writingPrompt}
                             </div>
+                            
+                            {testConfig.writingImageUrl && (
+                                <div className="mb-6 flex justify-center">
+                                    <img src={testConfig.writingImageUrl} alt="Writing Reference" className="max-w-full max-h-64 rounded-xl border border-gray-200 dark:border-gray-700 shadow-sm" />
+                                </div>
+                            )}
 
                             <textarea
                                 value={essay}

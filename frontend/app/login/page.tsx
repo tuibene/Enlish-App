@@ -24,9 +24,10 @@ function LoginContent() {
 
     useEffect(() => {
         if (!loading && user) {
-            router.push('/dashboard');
+            const redirectTo = searchParams.get('redirect') || '/dashboard';
+            router.push(redirectTo);
         }
-    }, [user, loading, router]);
+    }, [user, loading, router, searchParams]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });

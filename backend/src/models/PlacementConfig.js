@@ -26,6 +26,10 @@ const placementConfigSchema = new mongoose.Schema({
         required: true,
         default: "Some people believe that technological advancements have made humans less socially active, while others argue that technology has connected us more than ever before. Discuss both views and give your own opinion. (Write at least 50 words)"
     },
+    writingImageUrl: {
+        type: String,
+        default: ""
+    },
     speakingPrompt: {
         type: String,
         required: true,

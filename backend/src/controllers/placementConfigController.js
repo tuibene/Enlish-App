@@ -27,6 +27,9 @@ const updatePlacementConfig = asyncHandler(async (req, res) => {
         config.listeningAudioUrl = req.body.listeningAudioUrl || config.listeningAudioUrl;
         config.listeningQuestion = req.body.listeningQuestion || config.listeningQuestion;
         config.writingPrompt = req.body.writingPrompt || config.writingPrompt;
+        if (req.body.writingImageUrl !== undefined) {
+            config.writingImageUrl = req.body.writingImageUrl;
+        }
         config.speakingPrompt = req.body.speakingPrompt || config.speakingPrompt;
 
         const updatedConfig = await config.save();

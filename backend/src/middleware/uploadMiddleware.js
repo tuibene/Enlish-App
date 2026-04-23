@@ -1,32 +1,19 @@
 const multer = require('multer');
 const path = require('path');
 
-// Set storage engine
-const storage = multer.diskStorage({
-    destination(req, file, cb) {
-        cb(null, 'uploads/');
-    },
-    filename(req, file, cb) {
-        cb(
-            null,
-            `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`
-        );
-    }
-});
+// Use memory storage instead of disk - files will be uploaded to Cloudinary
+const storage = multer.memoryStorage();
 
 // Check file type
 function checkFileType(file, cb) {
-    // Allowed ext
-    const filetypes = /pdf|doc|docx/;
-    // Check ext
+    const filetypes = /pdf|doc|docx|mp3|wav|m4a|webm|mp4|jpg|jpeg|png|webp|svg|gif/;
     const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-    // Check mime
     const mimetype = filetypes.test(file.mimetype);
 
     if (mimetype && extname) {
         return cb(null, true);
     } else {
-        cb('Error: PDFs and Word Documents Only!');
+        cb('Error: PDFs, Word, Audio, Video, and Image files Only!');
     }
 }
 

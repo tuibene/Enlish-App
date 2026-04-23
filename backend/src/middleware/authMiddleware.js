@@ -29,7 +29,7 @@ const protect = asyncHandler(async (req, res, next) => {
 });
 
 const admin = (req, res, next) => {
-    if (req.user && req.user.role === 'ADMIN') {
+    if (req.user && (req.user.role === 'ADMIN' || req.user.role === 'ROOT')) {
         next();
     } else {
         res.status(403);
@@ -37,4 +37,13 @@ const admin = (req, res, next) => {
     }
 };
 
-module.exports = { protect, admin };
+const root = (req, res, next) => {
+    if (req.user && req.user.role === 'ROOT') {
+        next();
+    } else {
+        res.status(403);
+        throw new Error('Not authorized as a root user');
+    }
+};
+
+module.exports = { protect, admin, root };

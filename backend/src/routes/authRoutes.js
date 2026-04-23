@@ -6,31 +6,16 @@ const {
     getUserProfile,
     updateUserProfile,
     getUsers,
+    updateUserRole,
 } = require('../controllers/authController');
-const { protect, admin } = require('../middleware/authMiddleware');
+const { protect, admin, root } = require('../middleware/authMiddleware');
 const passport = require('passport');
 const generateToken = require('../utils/generateToken');
 const multer = require('multer');
-const path = require('path');
-const fs = require('fs');
 
-// Ensure avatars directory exists
-const avatarsDir = path.join(__dirname, '../../uploads/avatars');
-if (!fs.existsSync(avatarsDir)) {
-    fs.mkdirSync(avatarsDir, { recursive: true });
-}
-
-const storage = multer.diskStorage({
-    destination(req, file, cb) {
-        cb(null, avatarsDir);
-    },
-    filename(req, file, cb) {
-        cb(null, `${req.user._id}-${Date.now()}${path.extname(file.originalname)}`);
-    }
-});
-
+// Use memory storage - avatars will be uploaded to Cloudinary in the controller
 const upload = multer({
-    storage,
+    storage: multer.memoryStorage(),
     limits: { fileSize: 5000000 } // 5MB limit
 });
 
@@ -38,10 +23,12 @@ router.route('/')
     .post(registerUser)
     .get(protect, admin, getUsers);
 
+router.route('/:id/role').put(protect, root, updateUserRole);
+
 router.post('/login', authUser);
 router.route('/profile')
     .get(protect, getUserProfile)
-    .put(protect, upload.single('avatar'), updateUserProfile);
+    .put(protect, upload.any(), updateUserProfile);
 
 // Google OAuth
 router.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));

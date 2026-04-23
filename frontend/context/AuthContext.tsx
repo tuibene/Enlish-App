@@ -18,6 +18,7 @@ export interface User {
     enrolledCourse?: string;
     completedCourseDays?: number[];
     purchasedCourses?: string[];
+    coverImage?: string;
 }
 
 interface AuthContextType {
@@ -86,6 +87,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const updatePreferences = async (theme: string, language: string) => {
         if (!token || !user) return;
+        
+        // Optimistic UI update
+        setUser({ ...user, theme, language });
+        
         try {
             const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/users/profile`, {
                 method: 'PUT',

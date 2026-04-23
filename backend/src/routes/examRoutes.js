@@ -7,6 +7,7 @@ const {
     getMyExamHistory,
     createExam,
     deleteExam,
+    updateExam,
 } = require('../controllers/examController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
@@ -19,6 +20,7 @@ router.route('/history')
 
 router.route('/:id')
     .get(protect, getExamById)
+    .put(protect, admin, updateExam)
     .delete(protect, admin, deleteExam);
 
 router.route('/:id/submit')

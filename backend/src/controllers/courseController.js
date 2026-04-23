@@ -1,13 +1,14 @@
 const asyncHandler = require('express-async-handler');
 const Course = require('../models/Course');
 const User = require('../models/User');
+const { gradeWriting, gradeSpeaking } = require('../services/aiGrader');
 
 // @desc    Fetch all courses
 // @route   GET /api/courses
 // @access  Public
 const getCourses = asyncHandler(async (req, res) => {
     // Return courses without the heavy `days` array to keep the overview light
-    const courses = await Course.find({}).select('-days.content -days.exercises -days.materials');
+    const courses = await Course.find({}).select('-days');
     res.json(courses);
 });
 
@@ -173,6 +174,87 @@ const updateCourse = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc    Add a day to a course
+// @route   POST /api/courses/:id/days
+// @access  Private/Admin
+const addCourseDay = asyncHandler(async (req, res) => {
+    const { dayNumber, title, description, phase, tasks, content } = req.body;
+    const course = await Course.findById(req.params.id);
+
+    if (course) {
+        const newDay = {
+            dayNumber,
+            title,
+            description,
+            phase,
+            tasks: tasks || {},
+            content: content || '',
+            exercises: [],
+            materials: []
+        };
+
+        course.days.push(newDay);
+        await course.save();
+        res.status(201).json(course.days[course.days.length - 1]);
+    } else {
+        res.status(404);
+        throw new Error('Course not found');
+    }
+});
+
+// @desc    Update a course day
+// @route   PUT /api/courses/:id/days/:dayId
+// @access  Private/Admin
+const updateCourseDay = asyncHandler(async (req, res) => {
+    const { dayNumber, title, description, phase, tasks, content, exercises, materials } = req.body;
+    const course = await Course.findById(req.params.id);
+
+    if (course) {
+        const day = course.days.id(req.params.dayId);
+        if (day) {
+            day.dayNumber = dayNumber !== undefined ? dayNumber : day.dayNumber;
+            day.title = title !== undefined ? title : day.title;
+            day.description = description !== undefined ? description : day.description;
+            day.phase = phase !== undefined ? phase : day.phase;
+            day.tasks = tasks !== undefined ? tasks : day.tasks;
+            day.content = content !== undefined ? content : day.content;
+            day.exercises = exercises !== undefined ? exercises : day.exercises;
+            day.materials = materials !== undefined ? materials : day.materials;
+
+            await course.save();
+            res.json(day);
+        } else {
+            res.status(404);
+            throw new Error('Day not found');
+        }
+    } else {
+        res.status(404);
+        throw new Error('Course not found');
+    }
+});
+
+// @desc    Delete a course day
+// @route   DELETE /api/courses/:id/days/:dayId
+// @access  Private/Admin
+const deleteCourseDay = asyncHandler(async (req, res) => {
+    const course = await Course.findById(req.params.id);
+
+    if (course) {
+        const day = course.days.id(req.params.dayId);
+        if (day) {
+            day.remove();
+            await course.save();
+            res.json({ message: 'Day removed' });
+        } else {
+            res.status(404);
+            throw new Error('Day not found');
+        }
+    } else {
+        res.status(404);
+        throw new Error('Course not found');
+    }
+});
+
 // @desc    Delete a course
 // @route   DELETE /api/courses/:id
 // @access  Private/Admin
@@ -188,6 +270,36 @@ const deleteCourse = asyncHandler(async (req, res) => {
     }
 });
 
+// @desc    Grade Writing Task via AI
+// @route   POST /api/courses/:id/grade-writing
+// @access  Private
+const gradeWritingTask = asyncHandler(async (req, res) => {
+    const { promptText, studentEssay } = req.body;
+
+    if (!promptText || !studentEssay) {
+        res.status(400);
+        throw new Error('Please provide both promptText and studentEssay.');
+    }
+
+    const gradingResult = await gradeWriting(promptText, studentEssay);
+    res.json(gradingResult);
+});
+
+// @desc    Grade Speaking Task via AI
+// @route   POST /api/courses/:id/grade-speaking
+// @access  Private
+const gradeSpeakingTask = asyncHandler(async (req, res) => {
+    const { promptText, studentTranscript } = req.body;
+
+    if (!promptText || !studentTranscript) {
+        res.status(400);
+        throw new Error('Please provide both promptText and studentTranscript.');
+    }
+
+    const gradingResult = await gradeSpeaking(promptText, studentTranscript);
+    res.json(gradingResult);
+});
+
 module.exports = {
     getCourses,
     getCourseById,
@@ -196,5 +308,10 @@ module.exports = {
     createCourse,
     updateCourse,
     deleteCourse,
-    purchaseCourse
+    purchaseCourse,
+    gradeWritingTask,
+    gradeSpeakingTask,
+    addCourseDay,
+    updateCourseDay,
+    deleteCourseDay
 };

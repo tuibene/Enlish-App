@@ -1,5 +1,7 @@
 const asyncHandler = require('express-async-handler');
-const { GoogleGenAI } = require('@google/genai');
+const { getNextApiKey } = require('../utils/geminiKeyPool');
+const { callGeminiWithRetry } = require('../utils/geminiClient');
+const { explainCache, gradingCache } = require('../utils/aiCache');
 
 // @desc    Process chat message with AI Tutor
 // @route   POST /api/ai-tutor
@@ -13,14 +15,11 @@ const chatWithTutor = asyncHandler(async (req, res) => {
     }
 
     try {
-        if (!process.env.GEMINI_API_KEY) {
-            console.warn('GEMINI_API_KEY is not set. Using fallback logic.');
+        if (!getNextApiKey()) {
             return res.json({
-                text: "I am a fallback AI (Gemini key missing). I see what you said: " + messages[messages.length - 1].parts[0].text
+                text: "I am a fallback AI (Gemini key missing). I see what you said: " + messages[messages.length - 1]?.content
             });
         }
-
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
         const systemInstruction = `You are an expert, encouraging, and friendly English language tutor named "EngPrep AI". 
 You are chatting with an English learner. 
@@ -34,25 +33,29 @@ Keep your responses concise, conversational, and accessible (B1 level vocabulary
             parts: [{ text: msg.content }]
         }));
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+        const response = await callGeminiWithRetry({
             contents: chatContents,
             config: {
                 systemInstruction: systemInstruction,
                 temperature: 0.7,
-            }
+            },
+            timeoutMs: 60000,
         });
 
-        if (response && response.text) {
-            res.json({ text: response.text });
-        } else {
-            throw new Error('AI produced an empty response.');
-        }
+        res.json({ text: response.text });
 
     } catch (error) {
-        console.error('Error generating AI Tutor response:', error);
-        res.status(500);
-        throw new Error('Failed to communicate with AI Tutor.');
+        console.error('Error generating AI Tutor response:', error.message || error);
+        
+        if (error.status === 429 || error.message === 'NO_API_KEY') {
+            return res.status(200).json({
+                text: "⚠️ AI service is temporarily unavailable. Please wait a moment and try again."
+            });
+        }
+
+        return res.status(200).json({
+            text: "⚠️ I had a connection hiccup. Could you try sending that message again?"
+        });
     }
 });
 
@@ -68,7 +71,15 @@ const explainText = asyncHandler(async (req, res) => {
     }
 
     try {
-        if (!process.env.GEMINI_API_KEY) {
+        // Check cache first to save API quota
+        const cacheKey = { type: 'explain', text: text.toLowerCase().trim(), context: (context || '').toLowerCase().trim() };
+        const cached = explainCache.get(cacheKey);
+        if (cached) {
+            console.log(`[AiCache] HIT for explain: "${text}"`);
+            return res.json(cached);
+        }
+
+        if (!getNextApiKey()) {
             return res.json({
                 phonetic: "",
                 definition: `Fallback explanation for "${text}". Add API key for real AI.`,
@@ -77,8 +88,6 @@ const explainText = asyncHandler(async (req, res) => {
                 example: `This is a sample example containing the word "${text}".`
             });
         }
-
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
         const prompt = `You are a world-class English tutor. Your student (whose native language is Vietnamese) highlighted the following text: "${text}".
 Context from the passage: "${context || "No context provided."}".
@@ -92,12 +101,12 @@ Analyze the highlighted text and return the result strictly as a valid JSON obje
 
 Do NOT include any markdown formatting like \`\`\`json. Return ONLY a parseable JSON object.`;
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+        const response = await callGeminiWithRetry({
             contents: [{ role: 'user', parts: [{ text: prompt }] }],
             config: {
-                temperature: 0.2, // Lower temperature for more consistent JSON structure
-            }
+                temperature: 0.2,
+            },
+            timeoutMs: 30000,
         });
 
         if (response && response.text) {
@@ -111,6 +120,7 @@ Do NOT include any markdown formatting like \`\`\`json. Return ONLY a parseable 
 
             try {
                 const parsed = JSON.parse(jsonString);
+                explainCache.set(cacheKey, parsed); // Cache successful response
                 res.json(parsed);
             } catch (err) {
                 console.error("Failed to parse AI JSON:", jsonString);
@@ -128,7 +138,7 @@ Do NOT include any markdown formatting like \`\`\`json. Return ONLY a parseable 
 
     } catch (error) {
         console.error('Error generating AI text explanation:', error.message || error);
-        
+
         // Handle Quota limit or other API Errors gracefully instead of crashing
         if (error.status === 429) {
             return res.status(200).json({
@@ -139,7 +149,7 @@ Do NOT include any markdown formatting like \`\`\`json. Return ONLY a parseable 
                 example: "The server received a 429 Too Many Requests response."
             });
         }
-        
+
         // General fallback so the UI never breaks completely
         return res.status(200).json({
             phonetic: "",
@@ -163,7 +173,15 @@ const gradeEssay = asyncHandler(async (req, res) => {
     }
 
     try {
-        if (!process.env.GEMINI_API_KEY) {
+        // Check cache to prevent duplicate essay submissions
+        const essayCacheKey = { type: 'grade', essay: essay.trim().substring(0, 500), prompt: (writingPrompt || '').trim() };
+        const cachedGrade = gradingCache.get(essayCacheKey);
+        if (cachedGrade) {
+            console.log('[AiCache] HIT for grade-essay');
+            return res.json(cachedGrade);
+        }
+
+        if (!getNextApiKey()) {
             return res.json({
                 score: "6.0",
                 feedback: "This is a mock fallback feedback because the API key is missing. The system requires an active GenAI key to accurately grade essays according to IELTS band scales.",
@@ -172,8 +190,6 @@ const gradeEssay = asyncHandler(async (req, res) => {
                 ]
             });
         }
-
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
         const promptText = `You are an expert IELTS examiner and English teacher.
 A student has submitted an essay in response to the following prompt:
@@ -199,12 +215,12 @@ You MUST return the evaluation strictly as a valid JSON object matching exactly 
 Provide exactly 3 to 5 critical improvements.
 Do NOT include any markdown formatting like \`\`\`json. Return ONLY a parseable JSON object.`;
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+        const response = await callGeminiWithRetry({
             contents: [{ role: 'user', parts: [{ text: promptText }] }],
             config: {
-                temperature: 0.3, // Consistent grading output
-            }
+                temperature: 0.3,
+            },
+            timeoutMs: 60000,
         });
 
         if (response && response.text) {
@@ -217,6 +233,7 @@ Do NOT include any markdown formatting like \`\`\`json. Return ONLY a parseable 
 
             try {
                 const parsed = JSON.parse(jsonString);
+                gradingCache.set(essayCacheKey, parsed); // Cache successful grading
                 res.json(parsed);
             } catch (err) {
                 console.error("Failed to parse AI Grader JSON:", jsonString);
@@ -228,7 +245,7 @@ Do NOT include any markdown formatting like \`\`\`json. Return ONLY a parseable 
 
     } catch (error) {
         console.error('Error grading essay:', error.message || error);
-        
+
         if (error.status === 429) {
             return res.status(200).json({
                 score: "N/A",
@@ -236,7 +253,7 @@ Do NOT include any markdown formatting like \`\`\`json. Return ONLY a parseable 
                 improvements: []
             });
         }
-        
+
         return res.status(200).json({
             score: "Err",
             feedback: "Failed to grade the essay due to a server error. Please try again later.",
@@ -254,7 +271,7 @@ const evaluateSpeech = asyncHandler(async (req, res) => {
     }
 
     try {
-        if (!process.env.GEMINI_API_KEY) {
+        if (!getNextApiKey()) {
             return res.json({
                 transcript: "(Fallback Transcript: This is a fallback test since Gemini Key is missing.)",
                 pronunciation_feedback: "Could not evaluate pronunciation without AI API Key.",
@@ -263,8 +280,6 @@ const evaluateSpeech = asyncHandler(async (req, res) => {
             });
         }
 
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-        
         // Ensure valid base64 (remove data:audio/... prefix if present)
         let base64Data = audioBase64;
         let mimeType = 'audio/webm'; // Assumed default from MediaRecorder
@@ -295,8 +310,7 @@ Respond STRICTLY with a valid JSON object matching exactly this format:
 }
 Do NOT include any markdown formatting like \`\`\`json. Return ONLY a parsable JSON object.`;
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+        const response = await callGeminiWithRetry({
             contents: [
                 {
                     role: 'user',
@@ -308,7 +322,8 @@ Do NOT include any markdown formatting like \`\`\`json. Return ONLY a parsable J
             ],
             config: {
                 temperature: 0.3
-            }
+            },
+            timeoutMs: 60000,
         });
 
         if (response && response.text) {
@@ -333,8 +348,22 @@ Do NOT include any markdown formatting like \`\`\`json. Return ONLY a parsable J
 
     } catch (error) {
         console.error('Error evaluating speech:', error.message || error);
-        res.status(500);
-        throw new Error('Failed to evaluate speech with AI Tutor.');
+        
+        if (error.status === 429) {
+            return res.status(200).json({
+                transcript: "(Audio Processing Failed)",
+                pronunciation_feedback: "API Quota Exceeded! The system has reached its limit for AI requests.",
+                grammar_corrections: "Please try again in a minute, or upgrade your API key if you hit the daily limit.",
+                ai_response: "⚠️ I am currently overloaded due to Google's rate limits. Let's talk again in about a minute!"
+            });
+        }
+
+        return res.status(200).json({
+            transcript: "(Processing Error)",
+            pronunciation_feedback: "A connection error occurred. Please try again.",
+            grammar_corrections: "Unable to process at this time.",
+            ai_response: "⚠️ I had a connection hiccup. Please try sending your audio again!"
+        });
     }
 });
 

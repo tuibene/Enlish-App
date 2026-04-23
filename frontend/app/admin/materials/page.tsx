@@ -33,7 +33,7 @@ export default function AdminMaterials() {
     });
 
     useEffect(() => {
-        if (!loading && (!user || user.role !== 'ADMIN')) {
+        if (!loading && (!user || (user.role !== 'ADMIN' && user.role !== 'ROOT'))) {
             router.push('/dashboard');
         }
     }, [user, loading, router]);
@@ -53,7 +53,7 @@ export default function AdminMaterials() {
     };
 
     useEffect(() => {
-        if (user?.role === 'ADMIN') {
+        if (user?.role === 'ADMIN' || user?.role === 'ROOT') {
             fetchMaterials();
         }
     }, [user]);
@@ -109,8 +109,8 @@ export default function AdminMaterials() {
             });
 
             if (res.ok) {
-                const url = await res.text();
-                setFormData({ ...formData, pdfUrl: url });
+                const cloudUrl = await res.json();
+                setFormData({ ...formData, pdfUrl: cloudUrl });
             } else {
                 alert('File upload failed.');
             }

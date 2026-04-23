@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { BookOpen, Plus, Edit2, Trash2, ArrowLeft, X, Activity, DollarSign } from 'lucide-react';
+import { BookOpen, Plus, Edit2, Trash2, ArrowLeft, X, Activity, DollarSign, Calendar } from 'lucide-react';
 
 interface Course {
     _id: string;
@@ -34,7 +34,7 @@ export default function AdminCourses() {
     });
 
     useEffect(() => {
-        if (!loading && (!user || user.role !== 'ADMIN')) {
+        if (!loading && (!user || (user.role !== 'ADMIN' && user.role !== 'ROOT'))) {
             router.push('/dashboard');
         }
     }, [user, loading, router]);
@@ -54,7 +54,7 @@ export default function AdminCourses() {
     };
 
     useEffect(() => {
-        if (user?.role === 'ADMIN') {
+        if (user?.role === 'ADMIN' || user?.role === 'ROOT') {
             fetchCourses();
         }
     }, [user]);
@@ -185,6 +185,13 @@ export default function AdminCourses() {
                                     {course.isPremium ? `${course.price.toLocaleString('vi-VN')} VND` : 'Free'}
                                 </div>
                                 <div className="flex gap-2">
+                                    <button 
+                                        onClick={() => router.push(`/admin/courses/${course._id}`)}
+                                        className="p-2 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-lg transition-colors"
+                                        title="Manage Course Days"
+                                    >
+                                        <Calendar className="w-5 h-5" />
+                                    </button>
                                     <button 
                                         onClick={() => openModal(course)}
                                         className="p-2 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors"

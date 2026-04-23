@@ -141,11 +141,35 @@ const createExam = asyncHandler(async (req, res) => {
 // @route   DELETE /api/exams/:id
 // @access  Private/Admin
 const deleteExam = asyncHandler(async (req, res) => {
+    const examId = req.params.id;
+    const deletedExam = await Exam.findByIdAndDelete(examId);
+
+    if (deletedExam) {
+        res.json({ message: 'Exam removed successfully' });
+    } else {
+        res.status(404);
+        throw new Error('Exam not found');
+    }
+});
+
+// @desc    Update an exam
+// @route   PUT /api/exams/:id
+// @access  Private/Admin
+const updateExam = asyncHandler(async (req, res) => {
+    const { title, type, description, questions } = req.body;
+
     const exam = await Exam.findById(req.params.id);
 
     if (exam) {
-        await exam.deleteOne();
-        res.json({ message: 'Exam removed' });
+        exam.title = title || exam.title;
+        exam.type = type || exam.type;
+        exam.description = description !== undefined ? description : exam.description;
+        if (questions) {
+            exam.questions = questions;
+        }
+
+        const updatedExam = await exam.save();
+        res.json(updatedExam);
     } else {
         res.status(404);
         throw new Error('Exam not found');
@@ -159,4 +183,5 @@ module.exports = {
     getMyExamHistory,
     createExam,
     deleteExam,
+    updateExam,
 };

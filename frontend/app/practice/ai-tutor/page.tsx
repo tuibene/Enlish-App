@@ -62,35 +62,67 @@ export default function AITutorPage() {
                 content: m.content
             }));
 
-            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/ai-tutor`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({ messages: chatHistory })
-            });
+            // Retry logic for transient failures (cold start, timeout, etc.)
+            const maxRetries = 2;
+            let lastError: Error | null = null;
 
-            const data = await res.json();
+            for (let attempt = 0; attempt <= maxRetries; attempt++) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 60000); // 60s timeout
 
-            if (res.ok) {
-                const botMsg: Message = {
-                    id: (Date.now() + 1).toString(),
-                    role: 'assistant',
-                    content: data.text,
-                    timestamp: new Date()
-                };
-                setMessages(prev => [...prev, botMsg]);
-            } else {
-                console.error("AI Error:", data.message);
-                const errorMsg: Message = {
-                    id: (Date.now() + 1).toString(),
-                    role: 'assistant',
-                    content: "Oops! I encountered a network error. Could you try sending that again?",
-                    timestamp: new Date()
-                };
-                setMessages(prev => [...prev, errorMsg]);
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/ai-tutor`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Authorization: `Bearer ${token}`
+                        },
+                        body: JSON.stringify({ messages: chatHistory }),
+                        signal: controller.signal
+                    });
+
+                    clearTimeout(timeoutId);
+                    const data = await res.json();
+
+                    if (res.ok && data.text) {
+                        const botMsg: Message = {
+                            id: (Date.now() + 1).toString(),
+                            role: 'assistant',
+                            content: data.text,
+                            timestamp: new Date()
+                        };
+                        setMessages(prev => [...prev, botMsg]);
+                        return; // Success — exit
+                    }
+
+                    // Non-OK response but not retryable (e.g. 400 bad request)
+                    if (res.status === 400) throw new Error(data.message || 'Bad request');
+
+                    // Server returned error — retry
+                    lastError = new Error(data.message || `Server error ${res.status}`);
+                } catch (err: unknown) {
+                    lastError = err instanceof Error ? err : new Error(String(err));
+                    if (lastError.name === 'AbortError') {
+                        lastError = new Error('Request timed out');
+                    }
+                }
+
+                // Wait before retrying (1.5s, 3s)
+                if (attempt < maxRetries) {
+                    await new Promise(resolve => setTimeout(resolve, 1500 * (attempt + 1)));
+                }
             }
+
+            // All retries exhausted
+            console.error("AI Error after retries:", lastError);
+            const errorMsg: Message = {
+                id: (Date.now() + 1).toString(),
+                role: 'assistant',
+                content: "Oops! I'm having trouble connecting right now. Please try sending your message again in a moment.",
+                timestamp: new Date()
+            };
+            setMessages(prev => [...prev, errorMsg]);
+
         } catch (error) {
             console.error("Network Error:", error);
             const errorMsg: Message = {

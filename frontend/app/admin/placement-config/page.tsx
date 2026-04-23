@@ -21,11 +21,15 @@ export default function PlacementConfigAdmin() {
         listeningAudioUrl: '',
         listeningQuestion: '',
         writingPrompt: '',
+        writingImageUrl: '',
         speakingPrompt: ''
     });
 
+    const [uploadingAudio, setUploadingAudio] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
+
     useEffect(() => {
-        if (!user || user.role !== 'ADMIN') {
+        if (!user || (user.role !== 'ADMIN' && user.role !== 'ROOT')) {
             router.push('/');
             return;
         }
@@ -43,6 +47,7 @@ export default function PlacementConfigAdmin() {
                         listeningAudioUrl: data.listeningAudioUrl || '',
                         listeningQuestion: data.listeningQuestion || '',
                         writingPrompt: data.writingPrompt || '',
+                        writingImageUrl: data.writingImageUrl || '',
                         speakingPrompt: data.speakingPrompt || ''
                     });
                 }
@@ -88,6 +93,56 @@ export default function PlacementConfigAdmin() {
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
         setConfig({ ...config, [e.target.name]: e.target.value });
+    };
+
+    const handleAudioUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+        const file = e.target.files[0];
+        setUploadingAudio(true);
+        const reader = new FileReader();
+        reader.onload = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/upload/base64`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ file: reader.result, fileName: file.name })
+                });
+                if (!res.ok) throw new Error('Upload failed');
+                const cloudUrl = await res.json();
+                setConfig({ ...config, listeningAudioUrl: cloudUrl });
+            } catch (err) {
+                console.error(err);
+                alert('Audio upload failed.');
+            } finally {
+                setUploadingAudio(false);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
+
+    const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!e.target.files || e.target.files.length === 0) return;
+        const file = e.target.files[0];
+        setUploadingImage(true);
+        const reader = new FileReader();
+        reader.onload = async () => {
+            try {
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/upload/base64`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+                    body: JSON.stringify({ file: reader.result, fileName: file.name })
+                });
+                if (!res.ok) throw new Error('Upload failed');
+                const cloudUrl = await res.json();
+                setConfig({ ...config, writingImageUrl: cloudUrl });
+            } catch (err) {
+                console.error(err);
+                alert('Image upload failed.');
+            } finally {
+                setUploadingImage(false);
+            }
+        };
+        reader.readAsDataURL(file);
     };
 
     if (isLoading) {
@@ -154,9 +209,15 @@ export default function PlacementConfigAdmin() {
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
-                                    <LinkIcon className="w-4 h-4 mr-1 text-gray-500" /> Direct Audio URL (.mp3 / .wav)
+                                    <LinkIcon className="w-4 h-4 mr-1 text-gray-500" /> Track Audio URL (.mp3)
                                 </label>
-                                <input type="text" name="listeningAudioUrl" value={config.listeningAudioUrl} onChange={handleChange} className="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-[#0B1120]/80 p-3 text-sm focus:ring-blue-500" placeholder="https://example.com/audio.mp3" />
+                                <div className="flex gap-2">
+                                    <input type="text" name="listeningAudioUrl" value={config.listeningAudioUrl} onChange={handleChange} className="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-[#0B1120]/80 p-3 text-sm focus:ring-blue-500" placeholder="https://.../audio.mp3" />
+                                    <label className={`shrink-0 flex items-center justify-center px-4 rounded-xl font-bold cursor-pointer transition-colors ${uploadingAudio ? 'bg-gray-300 text-gray-500' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'}`}>
+                                        {uploadingAudio ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Upload'}
+                                        <input type="file" className="hidden" accept="audio/*" onChange={handleAudioUpload} disabled={uploadingAudio} />
+                                    </label>
+                                </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Question</label>
@@ -174,6 +235,23 @@ export default function PlacementConfigAdmin() {
                             <div>
                                 <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Essay Prompt</label>
                                 <textarea name="writingPrompt" value={config.writingPrompt} onChange={handleChange} rows={5} className="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-[#0B1120]/80 p-3 text-sm focus:ring-blue-500"></textarea>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2 flex items-center">
+                                    <LinkIcon className="w-4 h-4 mr-1 text-gray-500" /> Reference Image URL (Optional)
+                                </label>
+                                <div className="flex gap-2">
+                                    <input type="text" name="writingImageUrl" value={config.writingImageUrl} onChange={handleChange} className="w-full rounded-xl border-gray-300 dark:border-gray-700 bg-white/80 dark:bg-[#0B1120]/80 p-3 text-sm focus:ring-blue-500" placeholder="https://.../chart.png" />
+                                    <label className={`shrink-0 flex items-center justify-center px-4 rounded-xl font-bold cursor-pointer transition-colors ${uploadingImage ? 'bg-gray-300 text-gray-500' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'}`}>
+                                        {uploadingImage ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Upload'}
+                                        <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} />
+                                    </label>
+                                </div>
+                                {config.writingImageUrl && (
+                                    <div className="mt-3 relative w-full h-32 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 overflow-hidden">
+                                        <img src={config.writingImageUrl} alt="Writing Reference" className="w-full h-full object-contain" />
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

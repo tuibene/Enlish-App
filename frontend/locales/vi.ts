@@ -1,6 +1,10 @@
 export const vi = {
     navbar: {
         mockExams: 'Thi Thử',
+        materials: 'Tài Liệu Cốt Lõi',
+        practice: 'Khu Luyện Tập',
+        assessment: 'Bài Đánh Giá',
+        roadmaps: 'Lộ Trình Học',
         dashboard: 'Bảng Điều Khiển',
         adminPanel: 'Quản Trị Viên',
         preferences: 'Tùy Chỉnh',

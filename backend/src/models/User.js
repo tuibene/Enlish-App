@@ -27,10 +27,14 @@ const userSchema = new mongoose.Schema(
         },
         role: {
             type: String,
-            enum: ['USER', 'ADMIN'],
+            enum: ['USER', 'ADMIN', 'ROOT'],
             default: 'USER',
         },
         avatar: {
+            type: String,
+            default: '',
+        },
+        coverImage: {
             type: String,
             default: '',
         },

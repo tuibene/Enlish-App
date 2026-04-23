@@ -1,17 +1,16 @@
-const { GoogleGenAI } = require('@google/genai');
+const { getNextApiKey } = require('../utils/geminiKeyPool');
+const { callGeminiWithRetry } = require('../utils/geminiClient');
 const PlacementConfig = require('../models/PlacementConfig');
 
 const evaluatePlacement = async (readingAnswer, listeningAnswer, studentEssay, audioFile) => {
     try {
-        if (!process.env.GEMINI_API_KEY) {
+        if (!getNextApiKey()) {
             console.warn('GEMINI_API_KEY is not set. Using fallback logic.');
             return {
                 cefrLevel: 'B1',
                 feedback: 'AI Evaluation is currently disabled because the API key is missing. Assigning default B1 level.',
             };
         }
-
-        const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
         // Fetch dynamic context from DB
         let config = await PlacementConfig.findOne();
@@ -85,12 +84,12 @@ Return ONLY a valid JSON object with the following exact structure (no markdown 
             contents = systemPrompt;
         }
 
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash',
+        const response = await callGeminiWithRetry({
             contents: contents,
             config: {
                 responseMimeType: 'application/json',
-            }
+            },
+            timeoutMs: 60000,
         });
 
         const jsonText = response.text;

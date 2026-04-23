@@ -8,7 +8,12 @@ const {
     createCourse,
     updateCourse,
     deleteCourse,
-    purchaseCourse
+    purchaseCourse,
+    gradeWritingTask,
+    gradeSpeakingTask,
+    addCourseDay,
+    updateCourseDay,
+    deleteCourseDay
 } = require('../controllers/courseController');
 const { protect, admin } = require('../middleware/authMiddleware');
 
@@ -24,5 +29,14 @@ router.route('/:id')
 router.route('/:id/enroll').post(protect, enrollCourse);
 router.route('/:id/complete').post(protect, completeCourseDay);
 router.route('/:id/purchase').post(protect, purchaseCourse);
+router.route('/:id/grade-writing').post(protect, gradeWritingTask);
+router.route('/:id/grade-speaking').post(protect, gradeSpeakingTask);
+
+router.route('/:id/days')
+    .post(protect, admin, addCourseDay);
+
+router.route('/:id/days/:dayId')
+    .put(protect, admin, updateCourseDay)
+    .delete(protect, admin, deleteCourseDay);
 
 module.exports = router;
