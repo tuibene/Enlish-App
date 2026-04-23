@@ -170,60 +170,189 @@ npm run dev
 
 ---
 
-## 📡 API Endpoints Nổi bật
+## 📡 API Endpoints (Nổi bật & Đầy đủ)
+
+### Authentication (`/api/users`)
+| Method | Endpoint | Mô tả |
+|--------|----------|--------|
+| `POST` | `/api/users/register` | Đăng ký tài khoản |
+| `POST` | `/api/users/login` | Đăng nhập |
+| `GET` | `/api/users/profile` | Lấy thông tin người dùng |
+| `PUT` | `/api/users/profile` | Cập nhật hồ sơ |
 
 ### Payment & Orders (`/api/payment` & `/api/orders`)
 | Method | Endpoint | Mô tả |
 |--------|----------|--------|
 | `POST` | `/api/payment/create_payment_url` | Khởi tạo giao dịch VNPay |
 | `GET` | `/api/payment/vnpay_ipn` | VNPay Webhook cập nhật DB |
+| `GET` | `/api/payment/vnpay_return` | Xử lý kết quả trả về từ VNPay |
 | `GET` | `/api/orders` | (Admin) Lấy danh sách doanh thu |
 
-### Mock IELTS (`/api/official-mocks`)
+### Courses (`/api/courses`)
 | Method | Endpoint | Mô tả |
 |--------|----------|--------|
-| `GET` | `/api/official-mocks` | Lấy danh sách đề thi chính thức |
-| `POST` | `/api/official-mocks/submit` | Nộp toàn bộ 4 kỹ năng |
+| `GET` | `/api/courses` | Danh sách khóa học |
+| `GET` | `/api/courses/:id` | Chi tiết khóa học |
+| `POST` | `/api/courses` | Tạo khóa học (Admin) |
 
-*(Các endpoint khác xem tại source code router)*
+### AI Tutor (`/api/ai-tutor`)
+| Method | Endpoint | Mô tả |
+|--------|----------|--------|
+| `POST` | `/api/ai-tutor/chat` | Chat với AI Tutor |
+| `POST` | `/api/ai-tutor/analyze-speaking` | Phân tích bài nói |
+| `POST` | `/api/ai-tutor/grade-essay` | Chấm bài viết |
+| `POST` | `/api/ai-tutor/analyze-listening` | Phân tích listening |
+
+### Exams (`/api/exams`)
+| Method | Endpoint | Mô tả |
+|--------|----------|--------|
+| `GET` | `/api/exams` | Danh sách bài thi |
+| `POST` | `/api/exams` | Tạo bài thi (Admin) |
+| `POST` | `/api/exams/:id/submit` | Nộp bài thi |
+
+### Official Mock IELTS (`/api/official-mocks`)
+| Method | Endpoint | Mô tả |
+|--------|----------|--------|
+| `GET` | `/api/official-mocks` | Danh sách đề thi CBT chính thức |
+| `POST` | `/api/official-mocks/submit`| Nộp toàn bộ 4 kỹ năng |
+
+### Placement Test (`/api/placement`)
+| Method | Endpoint | Mô tả |
+|--------|----------|--------|
+| `GET` | `/api/placement/test` | Lấy bài test xếp lớp |
+| `POST` | `/api/placement/submit` | Nộp bài test |
+
+### Materials (`/api/materials`)
+| Method | Endpoint | Mô tả |
+|--------|----------|--------|
+| `GET` | `/api/materials` | Danh sách tài liệu |
+| `POST` | `/api/materials` | Upload tài liệu (Admin) |
 
 ---
 
-## 📁 Cấu trúc thư mục cốt lõi
+## 📁 Cấu trúc dự án
 
 ```
 english-learning-platform/
-├── backend/
+├── backend/                    # Backend API (Node.js + Express)
 │   ├── src/
-│   │   ├── controllers/
+│   │   ├── config/            # Database & Passport configuration
+│   │   ├── controllers/       # Route handlers
 │   │   │   ├── aiTutorController.js      # Tính năng AI
 │   │   │   ├── paymentController.js      # Tích hợp VNPay
 │   │   │   ├── orderController.js        # Thống kê giao dịch
-│   │   │   └── officialMockExamController.js
-│   │   ├── models/
+│   │   │   ├── officialMockExamController.js
+│   │   │   ├── authController.js         # Authentication logic
+│   │   │   ├── courseController.js        # Course management
+│   │   │   ├── examController.js         # Exam & quiz logic
+│   │   │   ├── exerciseController.js     # Exercise management
+│   │   │   ├── materialController.js     # Learning materials
+│   │   │   ├── placementController.js    # Placement test
+│   │   │   └── placementConfigController.js
+│   │   ├── middleware/        # Auth, Role & Rate Limiting
+│   │   ├── models/            # Mongoose schemas
+│   │   │   ├── User.js, Course.js, Exam.js
 │   │   │   ├── Order.js                  # Lịch sử mua hàng
 │   │   │   └── OfficialMockExam.js       # Đề thi 4 kỹ năng
-│   │   ├── routes/
-│   │   ├── services/
+│   │   ├── routes/            # API route definitions
+│   │   ├── services/          # Business logic services
 │   │   │   └── vnpayService.js           # Xử lý chữ ký HMAC VNPay
-│   │   └── utils/
+│   │   ├── sockets/           # Socket.io real-time handlers
+│   │   └── utils/             # Utility functions
 │   │       ├── geminiClient.js           # Wrapper gọi AI chống lỗi
 │   │       ├── geminiKeyPool.js          # Load Balancer API Keys
 │   │       └── aiCache.js                # Bộ nhớ đệm LRU cho AI
-│   └── server.js
+│   ├── .env.example           # Environment variables template
+│   ├── server.js              # Application entry point
+│   └── seed*.js               # Các script tạo dữ liệu mẫu
 │
-├── frontend/
-│   ├── app/
-│   │   ├── admin/
+├── frontend/                   # Frontend (Next.js 16 + TypeScript)
+│   ├── app/                   # Next.js App Router
+│   │   ├── admin/             # Admin dashboard pages
 │   │   │   ├── orders/                   # Giao diện Admin quản lý thanh toán
 │   │   │   └── official-mocks/           # Quản lý đề thi CBT
-│   │   ├── courses/                      # Khóa học & Mua Premium
-│   │   ├── payment/result/               # Trang báo kết quả VNPay
-│   │   ├── practice/                     # Các module Luyện tập
-│   │   └── exams/ielts-mock/             # Môi trường thi thử CBT
-│   └── components/
-└── README.md
+│   │   ├── auth/              # Authentication pages
+│   │   ├── courses/           # Khóa học & Mua Premium
+│   │   ├── payment/result/    # Trang báo kết quả VNPay
+│   │   ├── practice/          # Các module Luyện tập
+│   │   │   ├── ai-tutor/     # AI Tutor chat interface
+│   │   │   ├── exercises/    # Interactive exercises
+│   │   │   ├── listening/    # Listening practice
+│   │   │   ├── speaking/     # Speaking practice
+│   │   │   ├── speaking-room/# Live speaking room
+│   │   │   └── writing/      # Writing practice (Essay Grader)
+│   │   └── exams/ielts-mock/  # Môi trường thi thử CBT
+│   ├── components/            # Reusable React components
+│   ├── context/               # React Context providers
+│   ├── hooks/                 # Custom React hooks
+│   └── services/              # API service functions
+│
+├── .gitignore                 # Git ignore rules
+└── README.md                  # Project documentation
 ```
+
+---
+
+## 🔐 Bảo mật
+
+- **JWT Authentication**: Xác thực bằng JSON Web Token.
+- **Helmet.js**: Bảo vệ HTTP headers.
+- **CORS**: Kiểm soát cross-origin requests.
+- **Bcrypt**: Mã hóa mật khẩu an toàn.
+- **Environment Variables**: Tất cả secrets được lưu trong `.env` (không đẩy lên git).
+- **HMAC-SHA512**: Mã hóa chữ ký điện tử cho giao dịch VNPay.
+- **Input Validation**: Ngăn chặn XSS và SQL Injection.
+- **Passport.js**: OAuth 2.0 authentication strategy (Google Login).
+
+> ⚠️ **Lưu ý**: File `.env` chứa thông tin nhạy cảm (API keys, database credentials) và **KHÔNG** được đẩy lên Git. Hãy sử dụng file `.env.example` làm template.
+
+---
+
+## 🌐 Real-time Features
+
+Dự án sử dụng **Socket.io** cho các tính năng thời gian thực (real-time):
+- 💬 Chat với AI Tutor mượt mà như người thật.
+- 🎙️ Phòng luyện nói trực tiếp (Speaking Room).
+- 📊 Cập nhật tiến độ học tập và đồng bộ trạng thái thanh toán.
+
+---
+
+## 📜 Scripts hữu ích
+
+### Backend
+```bash
+npm start          # Chạy production
+npm run dev        # Chạy development (hot reload)
+node seedCourses.js        # Seed dữ liệu khóa học
+node seedOfficialMocks.js  # Seed đề thi IELTS CBT
+node seedExercises.js      # Seed bài tập
+node seedMaterials.js      # Seed tài liệu
+node seedPremiumContent.js # Seed nội dung premium
+```
+
+### Frontend
+```bash
+npm run dev        # Chạy development
+npm run build      # Build production
+npm start          # Chạy production build
+npm run lint       # Kiểm tra code style
+```
+
+---
+
+## 👥 Đóng góp
+
+1. Fork dự án
+2. Tạo feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit thay đổi (`git commit -m 'Add amazing feature'`)
+4. Push lên branch (`git push origin feature/amazing-feature`)
+5. Tạo Pull Request
+
+---
+
+## 📄 License
+
+Dự án được phát hành dưới giấy phép [ISC License](https://opensource.org/licenses/ISC).
 
 ---
 
