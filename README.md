@@ -317,6 +317,18 @@ Dự án sử dụng **Socket.io** cho các tính năng thời gian thực (real
 
 ---
 
+## 💳 Tài khoản Test Thanh Toán (VNPay Sandbox)
+
+Để thử nghiệm tính năng mua khóa học Premium trong môi trường phát triển, vui lòng sử dụng tài khoản ngân hàng ảo (Sandbox) do VNPay cung cấp:
+
+- **Ngân hàng**: `NCB`
+- **Số thẻ**: `9704198526191432198`
+- **Tên chủ thẻ**: `NGUYEN VAN A`
+- **Ngày phát hành**: `07/15`
+- **Mật khẩu OTP**: `123456`
+
+---
+
 ## 📜 Scripts hữu ích
 
 ### Backend

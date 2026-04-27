@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { BookOpen, Headphones, PenTool, Mic, ArrowRight, Zap, Target, Sparkles, Network, Bot } from 'lucide-react';
+import { BookOpen, Headphones, PenTool, Mic, ArrowRight, Zap, Target, Sparkles, Network, Bot, Users } from 'lucide-react';
 
 export default function PracticeHubPage() {
     return (
@@ -147,8 +147,8 @@ export default function PracticeHubPage() {
                     </div>
 
                     {/* AI TUTOR */}
-                    <div className="bg-white dark:bg-gray-800/80 backdrop-blur-xl rounded-[2rem] p-8 md:p-10 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 dark:border-gray-700/50 group flex flex-col relative overflow-hidden md:col-span-2 lg:col-span-2">
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-500/10 dark:bg-purple-500/5 rounded-full -z-10 group-hover:scale-110 transition-transform duration-700 blur-3xl pointer-events-none"></div>
+                    <div className="bg-white dark:bg-gray-800/80 backdrop-blur-xl rounded-[2rem] p-8 md:p-10 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 dark:border-gray-700/50 group flex flex-col relative overflow-hidden">
+                        <div className="absolute bottom-0 right-0 w-64 h-64 bg-purple-500/10 dark:bg-purple-500/5 rounded-tl-full -z-10 group-hover:scale-125 transition-transform duration-700 blur-2xl"></div>
                         
                         <div className="flex items-center gap-6 mb-8 mt-2">
                             <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-purple-400 to-indigo-600 text-white flex items-center justify-center shadow-lg shadow-purple-500/30 transform group-hover:scale-110 transition-transform">
@@ -171,8 +171,38 @@ export default function PracticeHubPage() {
                             </li>
                         </ul>
 
-                        <Link href="/practice/ai-tutor" className="w-full md:w-auto self-start text-center bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-600 text-purple-700 hover:text-white dark:text-purple-400 dark:hover:bg-purple-600 dark:hover:text-white py-4 px-12 rounded-2xl font-bold transition-all duration-300 group-hover:shadow-lg flex items-center justify-center gap-2">
+                        <Link href="/practice/ai-tutor" className="w-full text-center bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-600 text-purple-700 hover:text-white dark:text-purple-400 dark:hover:bg-purple-600 dark:hover:text-white py-4 rounded-2xl font-bold transition-all duration-300 group-hover:shadow-lg flex items-center justify-center gap-2">
                             Start AI Tutor <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </Link>
+                    </div>
+
+                    {/* P2P SPEAKING ROOM */}
+                    <div className="bg-white dark:bg-gray-800/80 backdrop-blur-xl rounded-[2rem] p-8 md:p-10 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 dark:border-gray-700/50 group flex flex-col relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-64 h-64 bg-cyan-500/10 dark:bg-cyan-500/5 rounded-br-full -z-10 group-hover:scale-125 transition-transform duration-700 blur-2xl"></div>
+                        
+                        <div className="flex items-center gap-6 mb-8 mt-2">
+                            <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-cyan-400 to-cyan-600 text-white flex items-center justify-center shadow-lg shadow-cyan-500/30 transform group-hover:-rotate-6 transition-transform">
+                                <Users className="w-10 h-10" />
+                            </div>
+                            <div>
+                                <h3 className="text-3xl font-extrabold text-gray-900 dark:text-white flex items-center gap-2">Speaking Room</h3>
+                                <div className="text-cyan-500 font-bold uppercase tracking-widest text-sm mt-1">P2P Video Call</div>
+                            </div>
+                        </div>
+
+                        <ul className="space-y-4 mb-10 flex-grow text-gray-700 dark:text-gray-300 max-w-3xl">
+                            <li className="flex items-start gap-3">
+                                <CheckIcon color="text-cyan-500" /> 
+                                <span><strong>Real-time matching</strong> with global learners at your exact CEFR level.</span>
+                            </li>
+                            <li className="flex items-start gap-3">
+                                <CheckIcon color="text-cyan-500" /> 
+                                <span><strong>WebRTC Video Calling</strong> for immersive, face-to-face conversational practice.</span>
+                            </li>
+                        </ul>
+
+                        <Link href="/practice/speaking-room" className="w-full text-center bg-cyan-50 dark:bg-cyan-500/10 hover:bg-cyan-600 text-cyan-700 hover:text-white dark:text-cyan-400 dark:hover:bg-cyan-600 dark:hover:text-white py-4 rounded-2xl font-bold transition-all duration-300 group-hover:shadow-lg flex items-center justify-center gap-2">
+                            Join Room <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                         </Link>
                     </div>
 
