@@ -131,15 +131,51 @@ const purchaseCourse = asyncHandler(async (req, res) => {
 // @route   POST /api/courses
 // @access  Private/Admin
 const createCourse = asyncHandler(async (req, res) => {
+    let imageUrl = '/images/default-course.jpg';
+    let cloudinaryPublicId = '';
+
+    if (req.file) {
+        const cloudinary = require('cloudinary').v2;
+        cloudinary.config({
+            cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+            api_key: process.env.CLOUDINARY_API_KEY,
+            api_secret: process.env.CLOUDINARY_API_SECRET
+        });
+
+        const uploadToCloudinary = () => {
+            return new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { folder: 'english-learning/courses' },
+                    (error, result) => {
+                        if (result) resolve(result);
+                        else reject(error);
+                    }
+                );
+                const { Readable } = require('stream');
+                const readableStream = new Readable();
+                readableStream.push(req.file.buffer);
+                readableStream.push(null);
+                readableStream.pipe(stream);
+            });
+        };
+
+        const result = await uploadToCloudinary();
+        imageUrl = result.secure_url;
+        cloudinaryPublicId = result.public_id;
+    }
+
+    const { title, description, targetType, durationDays, level, isPremium, price } = req.body;
+
     const course = new Course({
-        title: 'New Premium Course',
-        description: 'Course description here...',
-        targetType: 'IELTS',
-        durationDays: 30,
-        level: 'Intermediate',
-        image: '/images/default-course.jpg',
-        isPremium: true,
-        price: 500000,
+        title: title || 'New Course',
+        description: description || 'Course description...',
+        targetType: targetType || 'IELTS',
+        durationDays: durationDays ? parseInt(durationDays) : 30,
+        level: level || 'Intermediate',
+        image: imageUrl,
+        cloudinaryPublicId,
+        isPremium: isPremium === 'true' || isPremium === true,
+        price: price ? parseInt(price) : 0,
         days: [],
     });
 
@@ -151,20 +187,55 @@ const createCourse = asyncHandler(async (req, res) => {
 // @route   PUT /api/courses/:id
 // @access  Private/Admin
 const updateCourse = asyncHandler(async (req, res) => {
-    const { title, description, targetType, durationDays, level, image, isPremium, price, days } = req.body;
+    const { title, description, targetType, durationDays, level, isPremium, price, days } = req.body;
 
     const course = await Course.findById(req.params.id);
 
     if (course) {
+        if (req.file) {
+            const cloudinary = require('cloudinary').v2;
+            cloudinary.config({
+                cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+                api_key: process.env.CLOUDINARY_API_KEY,
+                api_secret: process.env.CLOUDINARY_API_SECRET
+            });
+
+            const uploadToCloudinary = () => {
+                return new Promise((resolve, reject) => {
+                    const stream = cloudinary.uploader.upload_stream(
+                        { folder: 'english-learning/courses' },
+                        (error, result) => {
+                            if (result) resolve(result);
+                            else reject(error);
+                        }
+                    );
+                    const { Readable } = require('stream');
+                    const readableStream = new Readable();
+                    readableStream.push(req.file.buffer);
+                    readableStream.push(null);
+                    readableStream.pipe(stream);
+                });
+            };
+
+            const result = await uploadToCloudinary();
+            course.image = result.secure_url;
+            course.cloudinaryPublicId = result.public_id;
+        }
+
         course.title = title !== undefined ? title : course.title;
         course.description = description !== undefined ? description : course.description;
         course.targetType = targetType !== undefined ? targetType : course.targetType;
-        course.durationDays = durationDays !== undefined ? durationDays : course.durationDays;
+        course.durationDays = durationDays !== undefined ? parseInt(durationDays) : course.durationDays;
         course.level = level !== undefined ? level : course.level;
-        course.image = image !== undefined ? image : course.image;
-        course.isPremium = isPremium !== undefined ? isPremium : course.isPremium;
-        course.price = price !== undefined ? price : course.price;
-        course.days = days !== undefined ? days : course.days;
+        if (isPremium !== undefined) {
+            course.isPremium = isPremium === 'true' || isPremium === true;
+        }
+        course.price = price !== undefined ? parseInt(price) : course.price;
+        
+        // Days comes as stringified JSON from FormData if it's sent, but frontend doesn't send days on edit modal.
+        if (days) {
+            course.days = typeof days === 'string' ? JSON.parse(days) : days;
+        }
 
         const updatedCourse = await course.save();
         res.json(updatedCourse);

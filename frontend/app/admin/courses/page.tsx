@@ -23,6 +23,7 @@ export default function AdminCourses() {
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingId, setEditingId] = useState<string | null>(null);
+    const [imageFile, setImageFile] = useState<File | null>(null);
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -60,6 +61,7 @@ export default function AdminCourses() {
     }, [user]);
 
     const openModal = (course?: Course) => {
+        setImageFile(null);
         if (course) {
             setEditingId(course._id);
             setFormData({
@@ -103,13 +105,25 @@ export default function AdminCourses() {
                 ? `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/courses/${editingId}`
                 : `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/courses`;
 
+            const data = new FormData();
+            data.append('title', formData.title);
+            data.append('description', formData.description);
+            data.append('targetType', formData.targetType);
+            data.append('durationDays', formData.durationDays.toString());
+            data.append('level', formData.level);
+            data.append('isPremium', formData.isPremium.toString());
+            data.append('price', formData.price.toString());
+            
+            if (imageFile) {
+                data.append('image', imageFile);
+            }
+
             const res = await fetch(url, {
                 method,
                 headers: { 
-                    'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}` 
                 },
-                body: JSON.stringify(formData)
+                body: data
             });
 
             if (res.ok) {
@@ -252,6 +266,21 @@ export default function AdminCourses() {
                                     value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})}
                                     className="w-full bg-white/80 dark:bg-[#0B1120]/80 border border-gray-200 dark:border-gray-700 rounded-xl px-4 py-3 text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 transition-shadow resize-none"
                                 />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Cover Image (Optional)</label>
+                                <input 
+                                    type="file" 
+                                    accept="image/*"
+                                    onChange={e => {
+                                        if (e.target.files && e.target.files.length > 0) {
+                                            setImageFile(e.target.files[0]);
+                                        }
+                                    }}
+                                    className="w-full text-gray-700 dark:text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-indigo-900/30 dark:file:text-indigo-400"
+                                />
+                                {imageFile && <p className="text-xs text-indigo-600 mt-2">Selected: {imageFile.name}</p>}
                             </div>
 
                             <div className="grid grid-cols-2 gap-4">
