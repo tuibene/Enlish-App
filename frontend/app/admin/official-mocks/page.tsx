@@ -97,7 +97,6 @@ export default function ManageOfficialMocks() {
             questions: [{ text: 'The lecture focuses on [GAP] environments.', options: [] }]
         }],
         listeningAudioUrl: '',
-        readingQuestions: ['', '', ''],
         isActive: true
     });
     const [saving, setSaving] = useState(false);
@@ -161,7 +160,6 @@ export default function ManageOfficialMocks() {
                 questions: [{ text: 'The lecture focuses on [GAP] environments.', options: [] }]
             }],
             listeningAudioUrl: '',
-            readingQuestions: ['', '', ''],
             isActive: true
         });
         setIsModalOpen(true);
