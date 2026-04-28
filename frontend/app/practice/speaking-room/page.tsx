@@ -293,10 +293,10 @@ export default function SpeakingRoomPage() {
                                 </div>
                             </div>
 
-                            {/* Local Video (Picture in picture style on desktop, side by side on mobile if cramped, but let's do sidebar) */}
-                            <div className="md:w-72 bg-gray-800 flex flex-col justify-between p-4 relative">
+                            {/* Local Video (Floating on mobile, sidebar on desktop) */}
+                            <div className="absolute top-4 right-4 z-20 w-32 sm:w-48 md:static md:w-72 md:bg-gray-800 flex flex-col md:justify-between md:p-4 shrink-0 transition-all">
 
-                                <div className="aspect-[3/4] w-full bg-black rounded-2xl overflow-hidden relative shadow-2xl border border-gray-700">
+                                <div className="aspect-[3/4] w-full bg-black rounded-2xl overflow-hidden relative shadow-2xl border border-gray-700/50 md:border-gray-700">
                                     <video
                                         ref={localVideoRef}
                                         autoPlay
@@ -323,26 +323,26 @@ export default function SpeakingRoomPage() {
                                 </div>
 
                                 {/* Controls area */}
-                                <div className="mt-8 flex justify-center space-x-4">
+                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 md:static md:translate-x-0 mt-8 flex justify-center space-x-4 z-30">
                                     <button
                                         onClick={toggleMute}
-                                        className={`p-4 rounded-full transition-all shadow-lg ${isMuted ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-white'}`}
+                                        className={`p-3 md:p-4 rounded-full transition-all shadow-lg ${isMuted ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-gray-700/90 backdrop-blur-sm hover:bg-gray-600 text-white border border-gray-600'}`}
                                     >
-                                        {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
+                                        {isMuted ? <MicOff className="w-5 h-5 md:w-6 md:h-6" /> : <Mic className="w-5 h-5 md:w-6 md:h-6" />}
                                     </button>
 
                                     <button
                                         onClick={toggleVideo}
-                                        className={`p-4 rounded-full transition-all shadow-lg ${isVideoOff ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-gray-700 hover:bg-gray-600 text-white'}`}
+                                        className={`p-3 md:p-4 rounded-full transition-all shadow-lg ${isVideoOff ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-gray-700/90 backdrop-blur-sm hover:bg-gray-600 text-white border border-gray-600'}`}
                                     >
-                                        {isVideoOff ? <VideoOff className="w-6 h-6" /> : <Video className="w-6 h-6" />}
+                                        {isVideoOff ? <VideoOff className="w-5 h-5 md:w-6 md:h-6" /> : <Video className="w-5 h-5 md:w-6 md:h-6" />}
                                     </button>
 
                                     <button
                                         onClick={() => endCallAndReset()}
-                                        className="p-4 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg transition-all transform hover:-translate-y-1"
+                                        className="p-3 md:p-4 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg transition-all transform hover:-translate-y-1"
                                     >
-                                        <PhoneOff className="w-6 h-6" />
+                                        <PhoneOff className="w-5 h-5 md:w-6 md:h-6" />
                                     </button>
                                 </div>
                             </div>

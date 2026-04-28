@@ -178,10 +178,10 @@ export default function SpeakingPracticePage() {
                 </div>
             </div>
 
-            <div className="max-w-5xl mx-auto mt-6 w-full px-6 flex-1 flex gap-6 h-[calc(100vh-8rem)]">
+            <div className="max-w-5xl mx-auto mt-4 md:mt-6 w-full px-4 md:px-6 flex-1 flex flex-col md:flex-row gap-4 md:gap-6 md:h-[calc(100vh-8rem)] pb-4">
 
                 {/* Left Side: Avatar & Controls */}
-                <div className="w-1/3 flex flex-col gap-6">
+                <div className="w-full md:w-1/3 flex flex-col gap-6 min-h-[400px] md:min-h-0 shrink-0">
                     <div className="bg-gradient-to-br from-rose-50 to-pink-50 dark:from-gray-800 dark:to-gray-900 rounded-[2rem] p-8 shadow-sm border border-rose-100 dark:border-gray-800 flex-1 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-700 w-full">
                         
                         {/* Animated Background rings if listening */}
@@ -259,7 +259,7 @@ export default function SpeakingPracticePage() {
                 </div>
 
                 {/* Right Side: Conversation Live Transcript & Feedback */}
-                <div className="w-2/3 bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden relative">
+                <div className="w-full md:w-2/3 bg-white dark:bg-gray-800 rounded-[2rem] shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col overflow-hidden relative min-h-[500px] md:min-h-0">
                     
                     {errorMsg && (
                         <div className="absolute top-4 left-4 right-4 z-20 bg-red-50 text-red-600 dark:bg-red-900/40 dark:text-red-400 p-4 rounded-xl flex items-center gap-3 border border-red-200 dark:border-red-800/50 shadow-sm backdrop-blur-sm">
