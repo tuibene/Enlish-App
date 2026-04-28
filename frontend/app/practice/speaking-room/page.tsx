@@ -18,6 +18,13 @@ export default function SpeakingRoomPage() {
 
     const [isMuted, setIsMuted] = useState(false);
     const [isVideoOff, setIsVideoOff] = useState(false);
+    
+    const [toastMsg, setToastMsg] = useState<string>('');
+
+    const showToast = (msg: string) => {
+        setToastMsg(msg);
+        setTimeout(() => setToastMsg(''), 4000);
+    };
 
     const localVideoRef = useRef<HTMLVideoElement>(null);
     const remoteVideoRef = useRef<HTMLVideoElement>(null);
@@ -156,7 +163,7 @@ export default function SpeakingRoomPage() {
     };
 
     const endCallAndReset = (message?: string) => {
-        if (message) alert(message);
+        if (message) showToast(message);
 
         if (socket && roomId) {
             socket.emit('leave_room', { roomId });
@@ -220,7 +227,18 @@ export default function SpeakingRoomPage() {
     );
 
     return (
-        <div className="min-h-screen bg-white/80 dark:bg-[#0B1120]/80 py-8 px-4 transition-colors font-sans">
+        <div className="min-h-screen bg-white/80 dark:bg-[#0B1120]/80 py-8 px-4 transition-colors font-sans relative">
+            
+            {/* Custom Toast Alert */}
+            {toastMsg && (
+                <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 animate-fade-in-down transition-all duration-300">
+                    <div className="bg-gray-800/95 backdrop-blur-md text-white px-6 py-3 rounded-full shadow-2xl flex items-center space-x-3 border border-gray-700/50">
+                        <div className="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></div>
+                        <span className="font-medium text-sm tracking-wide">{toastMsg}</span>
+                    </div>
+                </div>
+            )}
+
             <div className="max-w-5xl mx-auto">
 
                 {/* Header Navbar */}
