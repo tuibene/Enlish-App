@@ -71,7 +71,7 @@ export default function Dashboard() {
         const fetchEnrolledCourse = async () => {
             setIsLoadingCourse(true);
             try {
-                const res = await fetch(`http://localhost:5000/api/courses/${user.enrolledCourse}`);
+                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/courses/${user.enrolledCourse}`);
                 if (res.ok) {
                     const data = await res.json();
                     setEnrolledCourseData(data);
@@ -93,7 +93,7 @@ export default function Dashboard() {
         const fetchRecommended = async () => {
             if (user && !user.enrolledCourse) {
                 try {
-                    const res = await fetch('http://localhost:5000/api/courses');
+                    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/courses`);
                     if (res.ok) {
                         const courses = await res.json();
                         

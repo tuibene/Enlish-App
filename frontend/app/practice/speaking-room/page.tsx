@@ -29,7 +29,7 @@ export default function SpeakingRoomPage() {
     useEffect(() => {
         if (!user) return;
 
-        const newSocket = io(process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000', {
+        const newSocket = io(process.env.NEXT_PUBLIC_SOCKET_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000', {
             withCredentials: true,
         });
 

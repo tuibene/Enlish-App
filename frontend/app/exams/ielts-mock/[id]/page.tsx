@@ -223,7 +223,7 @@ export default function IELTSMockTestPage({ params }: { params: Promise<{ id: st
             }
 
             const token = localStorage.getItem('token');
-            const res = await fetch('http://localhost:5000/api/mock-exams/evaluate', {
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/mock-exams/evaluate`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`

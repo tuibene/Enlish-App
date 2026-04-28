@@ -83,7 +83,7 @@ export default function Navbar() {
                                     </div>
                                     <Link href="/profile" className="flex items-center gap-2 group">
                                         {user.avatar ? (
-                                            <img src={user.avatar.startsWith('http') ? user.avatar : `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.avatar}`} alt="Avatar" className="w-8 h-8 rounded-full object-cover border-2 border-transparent group-hover:border-blue-500 transition-colors" />
+                                            <img src={user.avatar.startsWith('http') ? user.avatar : `${process.env.NEXT_PUBLIC_SOCKET_URL || process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000'}${user.avatar}`} alt="Avatar" className="w-8 h-8 rounded-full object-cover border-2 border-transparent group-hover:border-blue-500 transition-colors" />
                                         ) : (
                                             <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-sm shadow-md">
                                                 {user.name.charAt(0).toUpperCase()}
