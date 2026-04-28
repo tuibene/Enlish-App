@@ -17,15 +17,7 @@ export default function Dashboard() {
     const [studyHours, setStudyHours] = useState(10);
     const [projection, setProjection] = useState({ estimatedWeeks: 0, bandImprovement: 0 });
 
-    const [enrolledCourseData, setEnrolledCourseData] = useState<any>(() => {
-        if (typeof window !== 'undefined') {
-            const cached = sessionStorage.getItem('enrolledCourseData');
-            if (cached) {
-                try { return JSON.parse(cached); } catch(e) { return null; }
-            }
-        }
-        return null;
-    });
+    const [enrolledCourseData, setEnrolledCourseData] = useState<any>(null);
     const [isLoadingCourse, setIsLoadingCourse] = useState(false);
     const [recommendedCourses, setRecommendedCourses] = useState<any[]>([]);
 
@@ -47,23 +39,49 @@ export default function Dashboard() {
         return () => clearTimeout(handler);
     }, [cefrLevel, targetScore, studyHours]);
 
-    // Fetch enrolled course details
+    // Fetch enrolled course details — clear stale cache when user changes
     useEffect(() => {
+        if (!user) {
+            setEnrolledCourseData(null);
+            sessionStorage.removeItem('enrolledCourseData');
+            sessionStorage.removeItem('enrolledCourseUserId');
+            return;
+        }
+
+        // If user changed, wipe old cache immediately
+        const cachedUserId = sessionStorage.getItem('enrolledCourseUserId');
+        if (cachedUserId && cachedUserId !== user._id) {
+            sessionStorage.removeItem('enrolledCourseData');
+            sessionStorage.removeItem('enrolledCourseUserId');
+            setEnrolledCourseData(null);
+        }
+
+        // Try loading from cache only if it belongs to this user
+        if (!user.enrolledCourse) {
+            setEnrolledCourseData(null);
+            return;
+        }
+
+        const cached = sessionStorage.getItem('enrolledCourseData');
+        const cachedOwner = sessionStorage.getItem('enrolledCourseUserId');
+        if (cached && cachedOwner === user._id) {
+            try { setEnrolledCourseData(JSON.parse(cached)); } catch(e) { /* ignore */ }
+        }
+
         const fetchEnrolledCourse = async () => {
-            if (user && user.enrolledCourse) {
-                setIsLoadingCourse(true);
-                try {
-                    const res = await fetch(`http://localhost:5000/api/courses/${user.enrolledCourse}`);
-                    if (res.ok) {
-                        const data = await res.json();
-                        setEnrolledCourseData(data);
-                        sessionStorage.setItem('enrolledCourseData', JSON.stringify(data));
-                    }
-                } catch (error) {
-                    console.error('Failed to fetch enrolled course', error);
-                } finally {
-                    setIsLoadingCourse(false);
+            setIsLoadingCourse(true);
+            try {
+                const res = await fetch(`http://localhost:5000/api/courses/${user.enrolledCourse}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setEnrolledCourseData(data);
+                    sessionStorage.setItem('enrolledCourseData', JSON.stringify(data));
+                    sessionStorage.setItem('enrolledCourseUserId', user._id);
                 }
+            } catch (error) {
+                console.error('Failed to fetch enrolled course', error);
+            } finally {
+                setIsLoadingCourse(false);
             }
         };
 
