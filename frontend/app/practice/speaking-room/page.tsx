@@ -205,6 +205,20 @@ export default function SpeakingRoomPage() {
         );
     }
 
+    const renderCallControls = (isMobile: boolean) => (
+        <div className={isMobile ? "md:hidden absolute bottom-10 left-1/2 -translate-x-1/2 flex justify-center space-x-6 z-40" : "hidden md:flex mt-8 justify-center space-x-4"}>
+            <button onClick={toggleMute} className={`p-4 rounded-full transition-all shadow-2xl ${isMuted ? 'bg-red-500 text-white' : 'bg-gray-800/90 backdrop-blur-md text-white border border-gray-600/50'}`}>
+                {isMuted ? <MicOff className="w-6 h-6" /> : <Mic className="w-6 h-6" />}
+            </button>
+            <button onClick={toggleVideo} className={`p-4 rounded-full transition-all shadow-2xl ${isVideoOff ? 'bg-red-500 text-white' : 'bg-gray-800/90 backdrop-blur-md text-white border border-gray-600/50'}`}>
+                {isVideoOff ? <VideoOff className="w-6 h-6" /> : <Video className="w-6 h-6" />}
+            </button>
+            <button onClick={() => endCallAndReset()} className="p-4 rounded-full bg-red-600 text-white shadow-2xl transition-all">
+                <PhoneOff className="w-6 h-6" />
+            </button>
+        </div>
+    );
+
     return (
         <div className="min-h-screen bg-white/80 dark:bg-[#0B1120]/80 py-8 px-4 transition-colors font-sans">
             <div className="max-w-5xl mx-auto">
@@ -322,30 +336,12 @@ export default function SpeakingRoomPage() {
                                     )}
                                 </div>
 
-                                {/* Controls area */}
-                                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 md:static md:translate-x-0 mt-8 flex justify-center space-x-4 z-30">
-                                    <button
-                                        onClick={toggleMute}
-                                        className={`p-3 md:p-4 rounded-full transition-all shadow-lg ${isMuted ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-gray-700/90 backdrop-blur-sm hover:bg-gray-600 text-white border border-gray-600'}`}
-                                    >
-                                        {isMuted ? <MicOff className="w-5 h-5 md:w-6 md:h-6" /> : <Mic className="w-5 h-5 md:w-6 md:h-6" />}
-                                    </button>
-
-                                    <button
-                                        onClick={toggleVideo}
-                                        className={`p-3 md:p-4 rounded-full transition-all shadow-lg ${isVideoOff ? 'bg-red-500 hover:bg-red-600 text-white' : 'bg-gray-700/90 backdrop-blur-sm hover:bg-gray-600 text-white border border-gray-600'}`}
-                                    >
-                                        {isVideoOff ? <VideoOff className="w-5 h-5 md:w-6 md:h-6" /> : <Video className="w-5 h-5 md:w-6 md:h-6" />}
-                                    </button>
-
-                                    <button
-                                        onClick={() => endCallAndReset()}
-                                        className="p-3 md:p-4 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg transition-all transform hover:-translate-y-1"
-                                    >
-                                        <PhoneOff className="w-5 h-5 md:w-6 md:h-6" />
-                                    </button>
-                                </div>
+                                {/* Desktop Controls area */}
+                                {renderCallControls(false)}
                             </div>
+
+                            {/* Mobile Controls area */}
+                            {renderCallControls(true)}
                         </div>
                     )}
 
