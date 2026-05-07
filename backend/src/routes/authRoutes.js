@@ -7,6 +7,7 @@ const {
     updateUserProfile,
     getUsers,
     updateUserRole,
+    deleteUser,
 } = require('../controllers/authController');
 const { protect, admin, root } = require('../middleware/authMiddleware');
 const passport = require('passport');
@@ -23,6 +24,7 @@ router.route('/')
     .post(registerUser)
     .get(protect, admin, getUsers);
 
+router.route('/:id').delete(protect, root, deleteUser);
 router.route('/:id/role').put(protect, root, updateUserRole);
 
 router.post('/login', authUser);

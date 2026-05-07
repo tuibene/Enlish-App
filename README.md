@@ -43,9 +43,10 @@
 - Tính thời gian chính xác, cảnh báo nộp bài tự động.
 - Tự động lưu tiến trình làm bài.
 
-### 🗣️ Luyện nói (Speaking Practice)
-- Ghi âm trực tiếp bằng **MediaRecorder API** và hiển thị sóng âm (waveform).
-- Phân tích phát âm, từ vựng và ngữ pháp bằng **Gemini 2.0 Flash**.
+### 🗣️ Luyện nói (Speaking Practice & Speaking Room)
+- Ghi âm trực tiếp bằng **MediaRecorder API** và hiển thị sóng âm (waveform) thời gian thực.
+- **Phòng luyện nói (Speaking Room)**: Gọi video/âm thanh nhóm và kết nối **P2P (Peer-to-Peer) qua WebRTC** (sử dụng Socket.io làm Signaling Server).
+- Phân tích phát âm, từ vựng và ngữ pháp bằng **Gemini 2.5 Flash**.
 - Chấm điểm nghiêm ngặt theo từng tiêu chí **IELTS Band Score (0-9)**.
 
 ### ✍️ Luyện viết (Writing Practice)
@@ -56,6 +57,14 @@
 - Audio/Media được lưu trữ và tối ưu hóa qua **Cloudinary CDN**.
 - Bài đọc đa dạng, đồng bộ transcript thời gian thực.
 - Hỗ trợ tải và đọc tài liệu PDF trực tiếp trên trình duyệt.
+
+### 🎯 Đánh giá năng lực đầu vào (Placement Test)
+- Hệ thống bài kiểm tra xếp lớp toàn diện để phân loại trình độ học viên ngay khi đăng ký.
+- Admin có thể cấu hình linh hoạt bộ câu hỏi từ trang Quản trị (Placement Config).
+
+### 📊 Theo dõi tiến độ & Đa ngôn ngữ (Dashboard & i18n)
+- Giao diện Dashboard/Profile trực quan giúp học viên theo dõi tiến trình làm bài, lịch sử thanh toán và điểm số các kỹ năng.
+- Hỗ trợ Đa ngôn ngữ (Internationalization - i18n) giúp nền tảng dễ dàng mở rộng cho nhiều đối tượng người dùng.
 
 ### 🏫 Quản trị hệ thống (Admin Dashboard)
 - Quản lý **Người dùng** (Phân quyền ROOT, ADMIN, USER).
@@ -89,7 +98,7 @@
 ### Dịch vụ bên thứ ba
 | Dịch vụ | Mục đích |
 |---------|----------|
-| **Google Gemini 2.0 Flash** | AI Tutor, chấm bài, phân tích (Sử dụng SDK mới `@google/genai`) |
+| **Google Gemini 2.5 Flash** | AI Tutor, chấm bài, phân tích (Sử dụng SDK mới `@google/genai`) |
 | **VNPay Sandbox** | Cổng thanh toán nội địa |
 | **Cloudinary** | Lưu trữ Audio, PDF, Image |
 | **MongoDB Atlas** | Cloud database |

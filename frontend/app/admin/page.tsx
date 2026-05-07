@@ -27,6 +27,10 @@ export default function AdminDashboard() {
     const [examToDelete, setExamToDelete] = useState<string | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
 
+    // User Delete Modal State
+    const [userToDelete, setUserToDelete] = useState<string | null>(null);
+    const [isDeletingUser, setIsDeletingUser] = useState(false);
+
     useEffect(() => {
         if (!loading && (!user || (user.role !== 'ADMIN' && user.role !== 'ROOT'))) {
             router.push('/dashboard');
@@ -82,6 +86,30 @@ export default function AdminDashboard() {
             alert('Failed to execute delete request');
         } finally {
             setIsDeleting(false);
+        }
+    };
+
+    const executeDeleteUser = async (userId: string) => {
+        setIsDeletingUser(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'}/users/${userId}`, {
+                method: 'DELETE',
+                headers: { Authorization: `Bearer ${token}` }
+            });
+
+            if (res.ok) {
+                setUsersList(usersList.filter(u => u._id !== userId));
+                setUserToDelete(null);
+            } else {
+                const errorData = await res.json();
+                alert(`Error deleting user: ${errorData.message || 'Unknown error'}`);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Failed to execute delete user request');
+        } finally {
+            setIsDeletingUser(false);
         }
     };
 
@@ -342,20 +370,31 @@ export default function AdminDashboard() {
                                             </td>
                                             <td className="py-3.5 px-6 text-sm text-gray-500 dark:text-gray-400">{u.email}</td>
                                             <td className="py-3.5 px-6 text-right">
-                                                <select
-                                                    value={u.role}
-                                                    onChange={(e) => handleRoleChange(u._id, e.target.value)}
-                                                    disabled={user?.role !== 'ROOT' || u._id === user?._id}
-                                                    className={`appearance-none bg-transparent outline-none ${user?.role === 'ROOT' && u._id !== user?._id ? 'cursor-pointer hover:border-indigo-200 dark:hover:border-indigo-800' : 'cursor-not-allowed opacity-80'} inline-flex items-center px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider text-center border border-transparent focus:ring-2 focus:ring-indigo-500/50 ${
-                                                        u.role === 'ROOT' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50' : 
-                                                        u.role === 'ADMIN' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 hover:bg-rose-200 dark:hover:bg-rose-900/50' : 
-                                                        'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50'
-                                                    }`}
-                                                >
-                                                    <option value="USER" className="text-gray-900 font-bold bg-white dark:bg-gray-800 dark:text-white">USER</option>
-                                                    <option value="ADMIN" className="text-gray-900 font-bold bg-white dark:bg-gray-800 dark:text-white">ADMIN</option>
-                                                    {user?.role === 'ROOT' && <option value="ROOT" className="text-gray-900 font-bold bg-white dark:bg-gray-800 dark:text-white">ROOT</option>}
-                                                </select>
+                                                <div className="flex justify-end items-center gap-2">
+                                                    <select
+                                                        value={u.role}
+                                                        onChange={(e) => handleRoleChange(u._id, e.target.value)}
+                                                        disabled={user?.role !== 'ROOT' || u._id === user?._id}
+                                                        className={`appearance-none bg-transparent outline-none ${user?.role === 'ROOT' && u._id !== user?._id ? 'cursor-pointer hover:border-indigo-200 dark:hover:border-indigo-800' : 'cursor-not-allowed opacity-80'} inline-flex items-center px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-wider text-center border border-transparent focus:ring-2 focus:ring-indigo-500/50 ${
+                                                            u.role === 'ROOT' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-900/50' : 
+                                                            u.role === 'ADMIN' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400 hover:bg-rose-200 dark:hover:bg-rose-900/50' : 
+                                                            'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50'
+                                                        }`}
+                                                    >
+                                                        <option value="USER" className="text-gray-900 font-bold bg-white dark:bg-gray-800 dark:text-white">USER</option>
+                                                        <option value="ADMIN" className="text-gray-900 font-bold bg-white dark:bg-gray-800 dark:text-white">ADMIN</option>
+                                                        {user?.role === 'ROOT' && <option value="ROOT" className="text-gray-900 font-bold bg-white dark:bg-gray-800 dark:text-white">ROOT</option>}
+                                                    </select>
+                                                    {user?.role === 'ROOT' && u._id !== user?._id && u.role !== 'ROOT' && (
+                                                        <button 
+                                                            onClick={() => setUserToDelete(u._id)}
+                                                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-all" 
+                                                            title="Delete User"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -524,6 +563,39 @@ export default function AdminDashboard() {
                                     disabled={isDeleting}
                                 >
                                     {isDeleting ? <Activity className="w-5 h-5 animate-spin" /> : 'Yes, Delete'}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Custom User Delete Confirmation Modal */}
+            {userToDelete && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-gray-900 rounded-[2rem] shadow-2xl border border-gray-100 dark:border-gray-800 w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-8 text-center flex flex-col items-center">
+                            <div className="w-16 h-16 rounded-full bg-red-50 dark:bg-red-900/20 flex items-center justify-center mb-6 text-red-500 ring-8 ring-red-50/50 dark:ring-red-900/10">
+                                <Trash2 className="w-8 h-8" />
+                            </div>
+                            <h3 className="text-xl font-black text-gray-900 dark:text-white mb-2">Delete User Account?</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mb-8 font-medium">
+                                Are you sure you want to delete this user? All their progress and purchases will be lost. This action cannot be undone.
+                            </p>
+                            <div className="flex items-center gap-3 w-full">
+                                <button 
+                                    onClick={() => setUserToDelete(null)}
+                                    className="flex-1 py-3 px-4 font-bold rounded-xl text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 transition-colors"
+                                    disabled={isDeletingUser}
+                                >
+                                    Cancel
+                                </button>
+                                <button 
+                                    onClick={() => executeDeleteUser(userToDelete)}
+                                    className="flex-1 py-3 px-4 font-bold rounded-xl bg-red-600 hover:bg-red-700 text-white flex justify-center items-center gap-2 shadow-lg shadow-red-500/30 transition-all active:scale-95"
+                                    disabled={isDeletingUser}
+                                >
+                                    {isDeletingUser ? <Activity className="w-5 h-5 animate-spin" /> : 'Yes, Delete User'}
                                 </button>
                             </div>
                         </div>

@@ -37,7 +37,7 @@ const server = http.createServer(app);
 // Initialize Socket.io
 const io = new Server(server, {
     cors: {
-        origin: ['http://localhost:3000', 'http://localhost:3001', process.env.FRONTEND_URL].filter(Boolean),
+        origin: [/^http:\/\/localhost:\d+$/, process.env.FRONTEND_URL].filter(Boolean),
         methods: ["GET", "POST"],
         credentials: true
     }
@@ -48,7 +48,7 @@ require('./src/sockets/socketManager')(io);
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ limit: '20mb', extended: true }));
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:3001', process.env.FRONTEND_URL].filter(Boolean),
+    origin: [/^http:\/\/localhost:\d+$/, process.env.FRONTEND_URL].filter(Boolean),
     credentials: true
 }));
 app.use(helmet({
